@@ -4,10 +4,11 @@ import 'package:device_preview/device_preview.dart';
 import 'package:real_estate_app/screens/add_property.dart';
 import 'screens/listing.dart';
 import 'screens/welcome_screen.dart';
-import 'screens/login.dart'; // Importing the WelcomeScreen class
-// Removed unnecessary import as 'flutter/material.dart' already includes 'flutter/widgets.dart'.
+import 'screens/login.dart';
+import 'screens/signup.dart';
 
-void main() {
+
+void main() async {
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
   );
@@ -42,7 +43,7 @@ class MyApp extends StatelessWidget {
         ),
       ),
       debugShowCheckedModeBanner: false, // Moved to the correct location.
-      home: const LoginScreen(), // Set the initial screen to WelcomeScreen
+      home: const SignUpPage(), // Set the initial screen to WelcomeScreen
       
       routes: {
         '/listing': (context) => const MyListingPage(),

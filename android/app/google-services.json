@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "895495656067",
+    "project_id": "p2p-housing",
+    "storage_bucket": "p2p-housing.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:895495656067:android:fef093a76d85d911f481b6",
+        "android_client_info": {
+          "package_name": "com.example.real_estate_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC4oELdLChSniNbVNcSF6K8mFd1QeNnvr0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
