@@ -6,6 +6,8 @@ import 'screens/listing.dart';
 import 'screens/welcome_screen.dart';
 import 'screens/login.dart';
 import 'screens/signup.dart';
+import 'screens/home.dart';
+import 'screens/listing_detail.dart';
 
 
 void main() async {
@@ -43,11 +45,12 @@ class MyApp extends StatelessWidget {
         ),
       ),
       debugShowCheckedModeBanner: false, // Moved to the correct location.
-      home: const SignUpPage(), // Set the initial screen to WelcomeScreen
-      
+      home: const DashboardPage(userType: 'Buyer', userName: 'Flames'),
+
+      initialRoute: '/',
       routes: {
-        '/listing': (context) => const MyListingPage(),
-        '/add_property': (context) => const AddEditPropertyPage(propertyData: {}),
+        '/': (context) => const WelcomeScreen(),
+        '/login': (context) => const Login
       }, // Your app's home screen
     );
   }

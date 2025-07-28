@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:real_estate_app/screens/login.dart';
+import 'package:real_estate_app/screens/signup.dart';
 
 
 class WelcomeScreen extends StatelessWidget{
@@ -89,7 +90,14 @@ class WelcomeScreen extends StatelessWidget{
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: () => {},
+                          onPressed: () => {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>  SignUpPage(),
+                                ),
+                              )
+                          },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.black,
                             foregroundColor: Colors.white,
