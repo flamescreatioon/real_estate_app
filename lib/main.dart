@@ -1,34 +1,45 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:device_preview/device_preview.dart';
-import 'package:real_estate_app/screens/add_property.dart';
-import 'screens/listing.dart';
-import 'screens/welcome_screen.dart';
-import 'screens/login.dart';
-import 'screens/signup.dart';
+import 'package:flutter/widgets.dart';
+import 'package:real_estate_app/route/app_router.dart';
+import 'screens/auth/welcome_screen.dart';
+import 'screens/auth/login.dart';
 import 'screens/home.dart';
-import 'screens/listing_detail.dart';
-
-
-void main() async {
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:go_router/go_router.dart';
+import 'package:real_estate_app/route/app_router.dart';
+Future<void> main() async {
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
   );
+
+  await dotenv.load(fileName: "lib/env/public_env.env");
+  await Supabase.initialize(
+    url: dotenv.env['SUPABASE_URL']!,
+    anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
+  );
+
   runApp(
     DevicePreview(
-      enabled: true, // Replace 'kReleaseMode' with a valid boolean value or define 'kReleaseMode'.
+      enabled:
+          true, // Replace 'kReleaseMode' with a valid boolean value or define 'kReleaseMode'.
       builder: (context) => const MyApp(), // Wrap your app
     ),
+    
   );
   // runApp(const MyApp());
 }
+
+final supabase = Supabase.instance.client;
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'Property P2P App',
       theme: ThemeData(
         primarySwatch: Colors.blue,
@@ -41,18 +52,17 @@ class MyApp extends StatelessWidget {
             color: Colors.black,
             fontSize: 20,
             fontWeight: FontWeight.bold,
-          ),
+          ), 
         ),
       ),
       debugShowCheckedModeBanner: false, // Moved to the correct location.
-      home: const DashboardPage(userType: 'Buyer', userName: 'Flames'),
+     routerConfig: router,
 
-      initialRoute: '/',
+      /*  initialRoute: '/',
       routes: {
         '/': (context) => const WelcomeScreen(),
-        '/login': (context) => const Login
-      }, // Your app's home screen
+        '/login': (context) => const LoginScreen(), 
+      }*/ // Your app's home screen
     );
   }
 }
-

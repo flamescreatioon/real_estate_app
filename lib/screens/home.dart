@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:real_estate_app/components/propertylist.dart';
+import 'package:real_estate_app/components/searchbar.dart' as custom_widgets;
+import 'package:real_estate_app/components/featured.dart';
+import 'package:real_estate_app/screens/property/listing.dart';
 
 class DashboardPage extends StatefulWidget {
   final String userType;
@@ -127,7 +131,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   // Search bar
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 16.0),
-                    child: SearchBar(
+                    child: custom_widgets.SearchBar(
                       onSearch: () {},
                     ),
                   ),
@@ -241,7 +245,7 @@ class _DashboardPageState extends State<DashboardPage> {
     // Common actions
     actions.add({'icon': Icons.search, 'label': 'Search'});
     actions.add({'icon': Icons.map, 'label': 'Map View'});
-    
+
     // User-specific actions
     switch (widget.userType) {
       case 'Buyer':
@@ -315,7 +319,6 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   Widget _buildFeaturedSection() {
-    
     String title;
     switch (widget.userType) {
       case 'Buyer':
@@ -347,7 +350,13 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
               ),
               TextButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>  MyListingPage()),
+                  );
+                },
                 child: Text(
                   'See All',
                   style: TextStyle(color: Colors.blue[700]),
@@ -371,7 +380,8 @@ class _DashboardPageState extends State<DashboardPage> {
                   bedrooms: 3 + (index % 3),
                   bathrooms: 2 + (index % 2),
                   sqft: 1200 + (index * 200),
-                  imageUrl: 'https://source.unsplash.com/random/300x200/?house,$index',
+                  imageUrl:
+                      'https://source.unsplash.com/random/300x200/?house,$index',
                 ),
               );
             },
@@ -414,7 +424,14 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
               ),
               TextButton(
-                onPressed: () {},
+                onPressed: () {
+ Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => MyListingPage()),
+                  );
+
+                },
                 child: Text(
                   'See All',
                   style: TextStyle(color: Colors.blue[700]),
@@ -435,7 +452,8 @@ class _DashboardPageState extends State<DashboardPage> {
               bedrooms: 2 + (index % 3),
               bathrooms: 1 + (index % 2),
               sqft: 1000 + (index * 150),
-              imageUrl: 'https://source.unsplash.com/random/100x100/?house,${index + 5}',
+              imageUrl:
+                  'https://source.unsplash.com/random/100x100/?house,${index + 5}',
             );
           },
         ),
@@ -580,7 +598,8 @@ class _DashboardPageState extends State<DashboardPage> {
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.trending_up, size: 16, color: Colors.green[700]),
+                        Icon(Icons.trending_up,
+                            size: 16, color: Colors.green[700]),
                         const SizedBox(width: 4),
                         Text(
                           '3.2%',
@@ -785,15 +804,18 @@ class _DashboardPageState extends State<DashboardPage> {
                                 ),
                                 const SizedBox(height: 8),
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
                                     ElevatedButton(
                                       onPressed: () {},
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: Colors.white,
                                         foregroundColor: Colors.blue[800],
-                                        side: BorderSide(color: Colors.blue[800]!),
-                                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                                        side: BorderSide(
+                                            color: Colors.blue[800]!),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 12),
                                         minimumSize: const Size(100, 32),
                                       ),
                                       child: const Text('View Details'),
@@ -801,7 +823,8 @@ class _DashboardPageState extends State<DashboardPage> {
                                     OutlinedButton(
                                       onPressed: () {},
                                       style: OutlinedButton.styleFrom(
-                                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 12),
                                         minimumSize: const Size(100, 32),
                                       ),
                                       child: const Text('Edit Listing'),
@@ -947,302 +970,6 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
               );
             },
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class PropertyListItem extends StatelessWidget {
-  final String propertyType;
-  final double price;
-  final String address;
-  final int bedrooms;
-  final int bathrooms;
-  final int sqft;
-  final String imageUrl;
-
-  const PropertyListItem({
-    Key? key,
-    required this.propertyType,
-    required this.price,
-    required this.address,
-    required this.bedrooms,
-    required this.bathrooms,
-    required this.sqft,
-    required this.imageUrl,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
-      padding: const EdgeInsets.all(12.0),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          // Property Image
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: Image.network(
-              imageUrl,
-              width: 100,
-              height: 100,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  width: 100,
-                  height: 100,
-                  color: Colors.grey[300],
-                  child: const Icon(
-                    Icons.broken_image,
-                    color: Colors.grey,
-                  ),
-                );
-              },
-            ),
-          ),
-          const SizedBox(width: 16),
-          // Property Details
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '\$${price.toStringAsFixed(0)}',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  address,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    _buildFeatureIcon(Icons.bed, '$bedrooms Beds'),
-                    const SizedBox(width: 8),
-                    _buildFeatureIcon(Icons.bathtub, '$bathrooms Baths'),
-                    const SizedBox(width: 8),
-                    _buildFeatureIcon(Icons.square_foot, '${sqft} sqft'),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFeatureIcon(IconData icon, String label) {
-    return Row(
-      children: [
-        Icon(
-          icon,
-          size: 16,
-          color: Colors.blue[700],
-        ),
-        const SizedBox(width: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey[600],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class SearchBar extends StatelessWidget {
-  final VoidCallback onSearch;
-
-  const SearchBar({
-    Key? key,
-    required this.onSearch,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
-      child: TextField(
-        decoration: InputDecoration(
-          hintText: 'Search properties, locations...',
-          hintStyle: TextStyle(color: Colors.grey[400]),
-          prefixIcon: Icon(Icons.search, color: Colors.grey[400]),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(vertical: 15),
-        ),
-        onTap: onSearch,
-      ),
-    );
-  }
-}
-
-class FeaturedPropertyCard extends StatelessWidget {
-  final String propertyType;
-  final double price;
-  final String address;
-  final int bedrooms;
-  final int bathrooms;
-  final int sqft;
-  final String imageUrl;
-
-  const FeaturedPropertyCard({
-    Key? key,
-    required this.propertyType,
-    required this.price,
-    required this.address,
-    required this.bedrooms,
-    required this.bathrooms,
-    required this.sqft,
-    required this.imageUrl,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 280,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Property Image
-          Stack(
-            children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                child: Image.network(
-                  imageUrl,
-                  height: 140,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      height: 140,
-                      width: double.infinity,
-                      color: Colors.grey[300],
-                      child: const Icon(
-                        Icons.broken_image,
-                        color: Colors.grey,
-                      ),
-                    );
-                  },
-                ),
-              ),
-              Positioned(
-                top: 10,
-                left: 10,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.blue[700]?.withOpacity(0.8),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    propertyType,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          // Property Details
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '\$${price.toStringAsFixed(0)}',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  address,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _buildFeatureIcon(Icons.bed, '$bedrooms Beds'),
-                    _buildFeatureIcon(Icons.bathtub, '$bathrooms Baths'),
-                    _buildFeatureIcon(Icons.square_foot, '${sqft} sqft'),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFeatureIcon(IconData icon, String label) {
-    return Row(
-      children: [
-        Icon(
-          icon,
-          size: 16,
-          color: Colors.blue[700],
-        ),
-        const SizedBox(width: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey[600],
           ),
         ),
       ],

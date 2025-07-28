@@ -1,5 +1,5 @@
-import "package:flutter/material.dart";
-
+import 'package:flutter/material.dart';
+import 'package:real_estate_app/screens/property/filters.dart';
 
 class SearchBar extends StatelessWidget {
   final VoidCallback onSearch;
@@ -31,7 +31,10 @@ class SearchBar extends StatelessWidget {
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(vertical: 15),
         ),
-        onTap: onSearch,
+        onTap: () {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => SearchFiltersScreen()));
+        },
       ),
     );
   }

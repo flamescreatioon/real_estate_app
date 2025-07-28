@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
-import 'package:real_estate_app/screens/login.dart';
-import 'package:real_estate_app/screens/signup.dart';
+import 'package:real_estate_app/screens/auth/login.dart';
+import 'package:real_estate_app/screens/auth/signup.dart';
 
 
 class WelcomeScreen extends StatelessWidget{
