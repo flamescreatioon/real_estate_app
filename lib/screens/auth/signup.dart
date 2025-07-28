@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:real_estate_app/screens/login.dart';
+import 'package:real_estate_app/screens/auth/login.dart';
 
 
 class SignUpPage extends StatefulWidget {
