@@ -21,7 +21,7 @@ class _SearchFiltersScreenState extends State<SearchFiltersScreen> {
           icon: Icon(
             Icons.arrow_back,
             color: Colors.black,
-            size: 24,
+            size: 25,
           ),
           onPressed: () => Navigator.pop(context),
         ),
