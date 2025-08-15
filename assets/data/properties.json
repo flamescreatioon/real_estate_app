@@ -1,0 +1,44 @@
+{
+  "properties": [
+    {
+      "id": "seed-1",
+      "title": "Modern 3BR Apartment",
+      "description": "Beautiful modern apartment with city views",
+      "price": 350000.0,
+      "city": "New York",
+      "type": "apartment",
+      "bedrooms": 3,
+      "bathrooms": 2,
+      "area": 1200.0,
+      "images": ["image1.jpg", "image2.jpg"],
+      "agent": {
+        "name": "John Doe",
+        "phone": "+1234567890",
+        "email": "john@realestate.com"
+      },
+      "location": {"latitude": 40.7128, "longitude": -74.0060},
+      "featured": true,
+      "createdAt": "2025-08-11T00:00:00.000Z"
+    },
+    {
+      "id": "seed-2",
+      "title": "Cozy 2BR House",
+      "description": "Charming house in quiet neighborhood",
+      "price": 280000.0,
+      "city": "Austin",
+      "type": "house",
+      "bedrooms": 2,
+      "bathrooms": 1,
+      "area": 900.0,
+      "images": ["image3.jpg", "image4.jpg"],
+      "agent": {
+        "name": "Jane Smith",
+        "phone": "+1234567891",
+        "email": "jane@realestate.com"
+      },
+      "location": {"latitude": 30.2672, "longitude": -97.7431},
+      "featured": false,
+      "createdAt": "2025-08-11T00:00:00.000Z"
+    }
+  ]
+}

@@ -30,7 +30,8 @@ class TabShell extends StatelessWidget {
         },
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.apartment), label: 'Listings'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.apartment), label: 'Listings'),
           BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Chat'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
@@ -39,7 +40,7 @@ class TabShell extends StatelessWidget {
   }
 
   int _calculateSelectedIndex(BuildContext context) {
-    final location = GoRouterState.of(context).location;
+    final location = GoRouterState.of(context).uri.toString();
     if (location.startsWith('/listings')) return 1;
     if (location.startsWith('/chat')) return 2;
     if (location.startsWith('/profile')) return 3;

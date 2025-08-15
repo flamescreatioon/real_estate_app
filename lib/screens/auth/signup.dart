@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:real_estate_app/screens/auth/login.dart';
-
+import 'package:provider/provider.dart';
+import 'package:real_estate_app/providers/auth_provider.dart';
+import 'package:real_estate_app/services/auth_services.dart';
+import 'package:go_router/go_router.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -13,7 +15,7 @@ class SignUpPageState extends State<SignUpPage> {
   final _formKey = GlobalKey<FormState>();
   bool _isObscure = true;
   String selectedUser = 'buyer';
-  final List<String> users = ['buyer', 'seller', 'Agent'];
+  final List<String> users = ['buyer', 'seller', 'agent'];
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
@@ -196,37 +198,69 @@ class SignUpPageState extends State<SignUpPage> {
                           },
                         ),
                         const SizedBox(height: 32),
-                        ElevatedButton(
-                          onPressed: () {
-                            if (_formKey.currentState!.validate()) {
-                              // Process sign up
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                      'Creating account for ${_nameController.text}...'),
-                                  backgroundColor: Colors.green,
-                                ),
+                        Consumer<AuthProvider>(
+                          builder: (context, auth, _) {
+                            Future<void> _handleSignUp() async {
+                              if (!_formKey.currentState!.validate()) return;
+
+                              FocusScope.of(context).unfocus();
+                              final role =
+                                  _mapUserSelectionToRole(selectedUser);
+                              await auth.signUp(
+                                email: _emailController.text.trim(),
+                                password: _passwordController.text.trim(),
+                                fullName: _nameController.text.trim(),
+                                phone: _phoneController.text.trim(),
+                                role: role,
                               );
 
-                              // Here you would typically handle the signup logic
-                              // For example, calling an API or Firebase Auth
+                              if (auth.error != null) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(auth.error!),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                                return;
+                              }
+
+                              // Navigate after successful signup (could require email verification)
+                              if (context.mounted) {
+                                context.go('/verify');
+                              }
                             }
+
+                            return ElevatedButton(
+                              onPressed: auth.isLoading ? null : _handleSignUp,
+                              style: ElevatedButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                backgroundColor: Colors.blue[700],
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: auth.isLoading
+                                  ? const SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                                Colors.white),
+                                      ),
+                                    )
+                                  : const Text(
+                                      'SIGN UP',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                            );
                           },
-                          style: ElevatedButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            backgroundColor: Colors.blue[700],
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: const Text(
-                            'SIGN UP',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
                         ),
                         const SizedBox(height: 16),
                         Row(
@@ -240,12 +274,7 @@ class SignUpPageState extends State<SignUpPage> {
                             ),
                             TextButton(
                               onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const LoginScreen(),
-                                  ),
-                                );
+                                context.go('/login');
                               },
                               child: Text(
                                 'Sign in',
@@ -266,5 +295,19 @@ class SignUpPageState extends State<SignUpPage> {
         ),
       ),
     );
+  }
+
+  UserRole _mapUserSelectionToRole(String value) {
+    switch (value.toLowerCase()) {
+      case 'buyer':
+        return UserRole.tenant;
+      case 'agent':
+        return UserRole.agent;
+      case 'seller':
+        return UserRole
+            .p2pClient; // Adjust mapping if different semantics needed
+      default:
+        return UserRole.p2pClient;
+    }
   }
 }

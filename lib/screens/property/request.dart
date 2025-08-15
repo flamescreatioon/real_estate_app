@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-class TransactionsScreen extends StatefulWidget {
-  const TransactionsScreen({Key? key}) : super(key: key);
+class PropertyRequestsScreen extends StatefulWidget {
+  const PropertyRequestsScreen({Key? key}) : super(key: key);
 
   @override
-  State<TransactionsScreen> createState() => _TransactionsScreenState();
+  State<PropertyRequestsScreen> createState() => _PropertyRequestsScreenState();
 }
 
-class _TransactionsScreenState extends State<TransactionsScreen>
+class _PropertyRequestsScreenState extends State<PropertyRequestsScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 

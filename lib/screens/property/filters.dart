@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:go_router/go_router.dart';
 
 class SearchFiltersScreen extends StatefulWidget {
   @override
@@ -9,7 +9,7 @@ class SearchFiltersScreen extends StatefulWidget {
 class _SearchFiltersScreenState extends State<SearchFiltersScreen> {
   int selectedTab = 0;
   final List<String> tabs = ['For Sale', 'For Rent', 'Recently Sold'];
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,7 +23,15 @@ class _SearchFiltersScreenState extends State<SearchFiltersScreen> {
             color: Colors.black,
             size: 25,
           ),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            // Prevent 'There is nothing to pop' exception when this screen
+            // is the first in the stack (e.g., navigated via context.go('/filters')).
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/dashboard');
+            }
+          },
         ),
         title: Text(
           'Search',
@@ -67,7 +75,7 @@ class _SearchFiltersScreenState extends State<SearchFiltersScreen> {
               ),
             ),
           ),
-          
+
           // Tab Bar
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 20),
@@ -75,7 +83,7 @@ class _SearchFiltersScreenState extends State<SearchFiltersScreen> {
               children: tabs.asMap().entries.map((entry) {
                 int index = entry.key;
                 String tab = entry.value;
-                
+
                 return Padding(
                   padding: EdgeInsets.only(right: 8),
                   child: GestureDetector(
@@ -85,10 +93,11 @@ class _SearchFiltersScreenState extends State<SearchFiltersScreen> {
                       });
                     },
                     child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
-                        color: selectedTab == index 
-                            ? Colors.grey[300] 
+                        color: selectedTab == index
+                            ? Colors.grey[300]
                             : Colors.grey[200],
                         borderRadius: BorderRadius.circular(20),
                       ),
@@ -106,9 +115,9 @@ class _SearchFiltersScreenState extends State<SearchFiltersScreen> {
               }).toList(),
             ),
           ),
-          
+
           SizedBox(height: 30),
-          
+
           // Filters Section
           Expanded(
             child: Padding(
@@ -124,9 +133,9 @@ class _SearchFiltersScreenState extends State<SearchFiltersScreen> {
                       color: Colors.black,
                     ),
                   ),
-                  
+
                   SizedBox(height: 20),
-                  
+
                   // Filter Options
                   Expanded(
                     child: Column(
@@ -158,7 +167,7 @@ class _SearchFiltersScreenState extends State<SearchFiltersScreen> {
               ),
             ),
           ),
-          
+
           // Bottom Action Bar
           Container(
             padding: EdgeInsets.all(20),
@@ -228,7 +237,7 @@ class _SearchFiltersScreenState extends State<SearchFiltersScreen> {
       ),
     );
   }
-  
+
   void _showLocationFilter() {
     showModalBottomSheet(
       context: context,
@@ -237,7 +246,7 @@ class _SearchFiltersScreenState extends State<SearchFiltersScreen> {
       builder: (context) => LocationFilterSheet(),
     );
   }
-  
+
   void _showPriceFilter() {
     showModalBottomSheet(
       context: context,
@@ -246,7 +255,7 @@ class _SearchFiltersScreenState extends State<SearchFiltersScreen> {
       builder: (context) => PriceFilterSheet(),
     );
   }
-  
+
   void _showBedsAndBathsFilter() {
     showModalBottomSheet(
       context: context,
@@ -255,7 +264,7 @@ class _SearchFiltersScreenState extends State<SearchFiltersScreen> {
       builder: (context) => BedsAndBathsFilterSheet(),
     );
   }
-  
+
   void _showPropertyTypeFilter() {
     showModalBottomSheet(
       context: context,
@@ -264,7 +273,7 @@ class _SearchFiltersScreenState extends State<SearchFiltersScreen> {
       builder: (context) => PropertyTypeFilterSheet(),
     );
   }
-  
+
   void _showMoreFilters() {
     showModalBottomSheet(
       context: context,
@@ -273,14 +282,14 @@ class _SearchFiltersScreenState extends State<SearchFiltersScreen> {
       builder: (context) => MoreFiltersSheet(),
     );
   }
-  
+
   void _clearAllFilters() {
     // Clear all filter logic
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('All filters cleared')),
     );
   }
-  
+
   void _showResults() {
     // Show results logic
     ScaffoldMessenger.of(context).showSnackBar(

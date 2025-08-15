@@ -1,55 +1,155 @@
-import "dart:io";
+import "dart:io" show Directory, File; // Only used in non-web platforms
 import "dart:convert";
+import 'package:flutter/foundation.dart' show kIsWeb;
 import "package:path_provider/path_provider.dart";
 
-class JsonDatabaseService{
+class JsonDatabaseService {
   static JsonDatabaseService? _instance;
-  static JsonDatabaseService get instance => _instance ??= JsonDatabaseService._();
+  static JsonDatabaseService get instance =>
+      _instance ??= JsonDatabaseService._();
 
   JsonDatabaseService._();
 
   static const String _propertiesFile = 'properties.json';
-  static const String _favoritesFile = 'favorities.json';
+  static const String _favoritesFile = 'favorites.json';
   static const String _userDataFile = 'user_data.json';
   static const String _searchFiltersFile = 'search_filters.json';
+  // In-memory store for web fallback
+  static final Map<String, Map<String, dynamic>> _webMemoryStore = {};
 
-  Future<Directory>get _documentsDirectory async{
+  /// Ensures all JSON storage files exist. Optionally seeds with sample data.
+  Future<void> ensureInitialized({bool withSampleData = false}) async {
+    if (kIsWeb) {
+      if (withSampleData) {
+        _webMemoryStore[_propertiesFile] = {
+          'properties': [
+            {
+              'id': 'seed-1',
+              'title': 'Modern 3BR Apartment',
+              'description': 'Beautiful modern apartment with city views',
+              'price': 350000.0,
+              'city': 'New York',
+              'type': 'apartment',
+              'bedrooms': 3,
+              'bathrooms': 2,
+              'area': 1200.0,
+              'images': ['image1.jpg', 'image2.jpg'],
+              'agent': {
+                'name': 'John Doe',
+                'phone': '+1234567890',
+                'email': 'john@realestate.com'
+              },
+              'location': {'latitude': 40.7128, 'longitude': -74.0060},
+              'featured': true,
+              'createdAt': DateTime.now().toIso8601String(),
+            },
+            {
+              'id': 'seed-2',
+              'title': 'Cozy 2BR House',
+              'description': 'Charming house in quiet neighborhood',
+              'price': 280000.0,
+              'city': 'Austin',
+              'type': 'house',
+              'bedrooms': 2,
+              'bathrooms': 1,
+              'area': 900.0,
+              'images': ['image3.jpg', 'image4.jpg'],
+              'agent': {
+                'name': 'Jane Smith',
+                'phone': '+1234567891',
+                'email': 'jane@realestate.com'
+              },
+              'location': {'latitude': 30.2672, 'longitude': -97.7431},
+              'featured': false,
+              'createdAt': DateTime.now().toIso8601String(),
+            }
+          ]
+        };
+      } else {
+        _webMemoryStore[_propertiesFile] = {'properties': []};
+      }
+      _webMemoryStore[_favoritesFile] =
+          _webMemoryStore[_favoritesFile] ?? {'favorites': []};
+      _webMemoryStore[_userDataFile] = _webMemoryStore[_userDataFile] ?? {};
+      _webMemoryStore[_searchFiltersFile] =
+          _webMemoryStore[_searchFiltersFile] ?? {};
+      return;
+    }
+
+    // Non-web platforms: use file system
+    final directory = await _documentsDirectory;
+    Future<void> _createIfMissing(
+        String name, Map<String, dynamic> data) async {
+      final file = File('${directory.path}/$name');
+      if (!await file.exists()) {
+        await file.writeAsString(json.encode(data));
+      }
+    }
+
+    if (withSampleData) {
+      await _createIfMissing(_propertiesFile, {
+        'properties': _webMemoryStore[_propertiesFile]?['properties'] ?? []
+      });
+    } else {
+      await _createIfMissing(_propertiesFile, {'properties': []});
+    }
+    await _createIfMissing(_favoritesFile, {'favorites': []});
+    await _createIfMissing(_userDataFile, {});
+    await _createIfMissing(_searchFiltersFile, {});
+  }
+
+  Future<Directory> get _documentsDirectory async {
+    // This getter should never be called on web due to guards elsewhere.
     return await getApplicationDocumentsDirectory();
   }
 
-  Future<Map<String, dynamic>> _readJsonFile(String fileName) async{
-    try{
+  Future<Map<String, dynamic>> _readJsonFile(String fileName) async {
+    try {
+      if (kIsWeb) {
+        return Map<String, dynamic>.from(_webMemoryStore[fileName] ?? {});
+      }
       final directory = await _documentsDirectory;
       final file = File('${directory.path}/$fileName');
+      if (!await directory.exists()) {
+        await directory.create(recursive: true);
+      }
 
-      if(!await file.exists()){
-        return{};
+      if (!await file.exists()) {
+        return {};
       }
 
       final contents = await file.readAsString();
       return json.decode(contents) as Map<String, dynamic>;
-    }catch(e){
+    } catch (e) {
       print('Error Reading $fileName : $e');
-      return{};
+      return {};
     }
   }
 
-  Future<bool> _writeJsonFile(String filename, Map<String, dynamic> data) async{
-    try{
+  Future<bool> _writeJsonFile(
+      String filename, Map<String, dynamic> data) async {
+    try {
+      if (kIsWeb) {
+        _webMemoryStore[filename] = data;
+        return true;
+      }
       final directory = await _documentsDirectory;
-      final file = File('$directory.path/$filename');
+      final file = File('${directory.path}/$filename');
+      if (!await directory.exists()) {
+        await directory.create(recursive: true);
+      }
 
       await file.writeAsString(json.encode(data));
       return true;
-    }catch(e){
+    } catch (e) {
       print('Error writing $filename: $e');
       return false;
     }
   }
 
-  Future<List<Map<String, dynamic>>> getProperties() async{
+  Future<List<Map<String, dynamic>>> getProperties() async {
     final data = await _readJsonFile(_propertiesFile);
-    return List<Map<String, dynamic>>.from(data['properties']??[]);
+    return List<Map<String, dynamic>>.from(data['properties'] ?? []);
   }
 
   Future<bool> saveProperties(List<Map<String, dynamic>> properties) async {
@@ -60,10 +160,12 @@ class JsonDatabaseService{
     final properties = await getProperties();
     property['id'] = DateTime.now().millisecondsSinceEpoch.toString();
     properties.add(property);
-    return await saveProperties(properties);
+    final ok = await saveProperties(properties);
+    return ok;
   }
 
-  Future<bool> updateProperty(String id, Map<String, dynamic> updatedProperty) async {
+  Future<bool> updateProperty(
+      String id, Map<String, dynamic> updatedProperty) async {
     final properties = await getProperties();
     final index = properties.indexWhere((prop) => prop['id'] == id);
 
@@ -90,7 +192,8 @@ class JsonDatabaseService{
     final properties = await getProperties();
 
     return properties.where((property) {
-      if (city != null && property['city']?.toString().toLowerCase() != city.toLowerCase()) {
+      if (city != null &&
+          property['city']?.toString().toLowerCase() != city.toLowerCase()) {
         return false;
       }
       if (minPrice != null && (property['price'] ?? 0) < minPrice) {
@@ -142,8 +245,9 @@ class JsonDatabaseService{
     final favorites = await getFavorites();
     final allProperties = await getProperties();
 
-    return allProperties.where((property) =>
-        favorites.contains(property['id'])).toList();
+    return allProperties
+        .where((property) => favorites.contains(property['id']))
+        .toList();
   }
 
   // USER DATA METHODS
@@ -174,12 +278,22 @@ class JsonDatabaseService{
 
   // Clear all data
   Future<bool> clearAllData() async {
-    final directory = await _documentsDirectory;
     try {
+      if (kIsWeb) {
+        _webMemoryStore.remove(_propertiesFile);
+        _webMemoryStore.remove(_favoritesFile);
+        _webMemoryStore.remove(_userDataFile);
+        _webMemoryStore.remove(_searchFiltersFile);
+        await ensureInitialized(withSampleData: false);
+        return true;
+      }
+      final directory = await _documentsDirectory;
       await File('${directory.path}/$_propertiesFile').delete();
       await File('${directory.path}/$_favoritesFile').delete();
       await File('${directory.path}/$_userDataFile').delete();
       await File('${directory.path}/$_searchFiltersFile').delete();
+      // Recreate empty structure
+      await ensureInitialized(withSampleData: false);
       return true;
     } catch (e) {
       print('Error clearing data: $e');
@@ -206,10 +320,7 @@ class JsonDatabaseService{
           'phone': '+1234567890',
           'email': 'john@realestate.com'
         },
-        'location': {
-          'latitude': 40.7128,
-          'longitude': -74.0060
-        },
+        'location': {'latitude': 40.7128, 'longitude': -74.0060},
         'featured': true,
         'createdAt': DateTime.now().toIso8601String(),
       },
@@ -229,10 +340,7 @@ class JsonDatabaseService{
           'phone': '+1234567891',
           'email': 'jane@realestate.com'
         },
-        'location': {
-          'latitude': 30.2672,
-          'longitude': -97.7431
-        },
+        'location': {'latitude': 30.2672, 'longitude': -97.7431},
         'featured': false,
         'createdAt': DateTime.now().toIso8601String(),
       }

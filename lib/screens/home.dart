@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:real_estate_app/components/propertylist.dart';
+import 'package:go_router/go_router.dart';
 import 'package:real_estate_app/components/searchbar.dart' as custom_widgets;
 import 'package:real_estate_app/components/featured.dart';
 import 'package:real_estate_app/screens/property/listing.dart';
@@ -167,9 +168,32 @@ class _DashboardPageState extends State<DashboardPage> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
+          setState(() => _selectedIndex = index);
+          switch (index) {
+            case 0: // Home
+              context.go('/dashboard');
+              break;
+            case 1: // Search / Listings
+              context.go('/filters');
+              break;
+            case 2: // User specific
+              if (widget.userType == 'Seller') {
+                context.go('/add-property');
+              } else if (widget.userType == 'Agent') {
+                context.go('/property/requests');
+              } else {
+                // Buyer or default -> favorites placeholder
+                // TODO: Implement a favorites screen route (e.g. /favorites) then update.
+                context.go('/listings');
+              }
+              break;
+            case 3: // Messages
+              context.go('/chat');
+              break;
+            case 4: // Profile
+              context.go('/profile');
+              break;
+          }
         },
         type: BottomNavigationBarType.fixed,
         selectedItemColor: Colors.blue[800],
@@ -353,8 +377,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                        builder: (context) =>  MyListingPage()),
+                    MaterialPageRoute(builder: (context) => MyListingPage()),
                   );
                 },
                 child: Text(
@@ -425,12 +448,10 @@ class _DashboardPageState extends State<DashboardPage> {
               ),
               TextButton(
                 onPressed: () {
- Navigator.push(
+                  Navigator.push(
                     context,
-                    MaterialPageRoute(
-                        builder: (context) => MyListingPage()),
+                    MaterialPageRoute(builder: (context) => MyListingPage()),
                   );
-
                 },
                 child: Text(
                   'See All',
@@ -501,7 +522,7 @@ class _DashboardPageState extends State<DashboardPage> {
                       ).createShader(rect);
                     },
                     blendMode: BlendMode.dstIn,
-                    child: Image.network(
+                    child: _networkImage(
                       'https://source.unsplash.com/random/400x200/?real,estate',
                       fit: BoxFit.cover,
                       alignment: Alignment.centerRight,
@@ -733,10 +754,13 @@ class _DashboardPageState extends State<DashboardPage> {
                             height: 80,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(8),
-                              image: const DecorationImage(
-                                image: NetworkImage(
-                                  'https://source.unsplash.com/random/80x80/?house',
-                                ),
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: _networkImage(
+                                'https://source.unsplash.com/random/80x80/?house',
+                                width: 80,
+                                height: 80,
                                 fit: BoxFit.cover,
                               ),
                             ),
@@ -942,10 +966,12 @@ class _DashboardPageState extends State<DashboardPage> {
                 margin: const EdgeInsets.only(right: 16),
                 child: Column(
                   children: [
-                    CircleAvatar(
-                      radius: 30,
-                      backgroundImage: NetworkImage(
+                    ClipOval(
+                      child: _networkImage(
                         'https://source.unsplash.com/random/200x200/?portrait,${index + 1}',
+                        width: 60,
+                        height: 60,
+                        fit: BoxFit.cover,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -973,6 +999,59 @@ class _DashboardPageState extends State<DashboardPage> {
           ),
         ),
       ],
+    );
+  }
+
+  // Centralized helper to safely load network images with graceful fallback.
+  Widget _networkImage(
+    String url, {
+    double? width,
+    double? height,
+    BoxFit fit = BoxFit.cover,
+    Alignment alignment = Alignment.center,
+  }) {
+    return Image.network(
+      url,
+      width: width,
+      height: height,
+      fit: fit,
+      alignment: alignment,
+      // On web, failed requests (status 0) should show a placeholder instead of throwing.
+      errorBuilder: (context, error, stackTrace) => Container(
+        width: width,
+        height: height,
+        color: Colors.grey[300],
+        alignment: Alignment.center,
+        child: Icon(
+          Icons.image_not_supported_outlined,
+          color: Colors.grey[600],
+          size: (width != null && height != null)
+              ? (width < height ? width * 0.4 : height * 0.4)
+              : 32,
+        ),
+      ),
+      // While loading, show a subtle placeholder.
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) return child;
+        return Container(
+          width: width,
+          height: height,
+          color: Colors.grey[200],
+          alignment: Alignment.center,
+          child: SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              valueColor: AlwaysStoppedAnimation(Colors.grey[500]),
+              value: loadingProgress.expectedTotalBytes != null
+                  ? loadingProgress.cumulativeBytesLoaded /
+                      loadingProgress.expectedTotalBytes!
+                  : null,
+            ),
+          ),
+        );
+      },
     );
   }
 }

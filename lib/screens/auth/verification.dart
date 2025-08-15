@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:go_router/go_router.dart';
+
+// Compile-time flag (must be top-level const; cannot be called inside build)
+const bool kUseSupabase = bool.fromEnvironment('USE_SUPABASE');
 
 class VerificationPage extends StatelessWidget {
   const VerificationPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final user =
+        kUseSupabase ? Supabase.instance.client.auth.currentUser : null;
+    final emailVerified = user?.emailConfirmedAt != null;
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
@@ -12,7 +20,13 @@ class VerificationPage extends StatelessWidget {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/dashboard');
+            }
+          },
         ),
         title: const Text(
           'Verification',
@@ -32,16 +46,67 @@ class VerificationPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Verification status',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
+                  Row(
+                    children: [
+                      const Text(
+                        'Verification status',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      if (kUseSupabase)
+                        Chip(
+                          label: Text(
+                              emailVerified ? 'Email Verified' : 'Pending'),
+                          backgroundColor: emailVerified
+                              ? Colors.green[100]
+                              : Colors.orange[100],
+                        ),
+                    ],
                   ),
                   const SizedBox(height: 24),
-                  
+                  if (kUseSupabase && !emailVerified)
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'We sent a verification link to your email. Once verified you\'ll be redirected automatically on next action.',
+                          style: TextStyle(fontSize: 14),
+                        ),
+                        const SizedBox(height: 12),
+                        ElevatedButton.icon(
+                          onPressed: () async {
+                            if (user?.email != null) {
+                              try {
+                                await Supabase.instance.client.auth.resend(
+                                  type: OtpType.signup,
+                                  email: user!.email!,
+                                );
+                                if (!context.mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content:
+                                          Text('Verification email resent.')),
+                                );
+                              } catch (e) {
+                                if (!context.mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                      content: Text('Failed to resend: $e')),
+                                );
+                              }
+                            }
+                          },
+                          icon: const Icon(Icons.email_outlined),
+                          label: const Text('Resend email'),
+                        ),
+                        const SizedBox(height: 24),
+                      ],
+                    ),
+
                   // Verification Status Items
                   _buildVerificationItem(
                     'Identity',
@@ -49,21 +114,21 @@ class VerificationPage extends StatelessWidget {
                     true,
                   ),
                   const SizedBox(height: 16),
-                  
+
                   _buildVerificationItem(
                     'Address',
                     'Verified',
                     true,
                   ),
                   const SizedBox(height: 16),
-                  
+
                   _buildVerificationItem(
                     'Income',
                     'Verified',
                     true,
                   ),
                   const SizedBox(height: 32),
-                  
+
                   // Uploaded Documents Section
                   const Text(
                     'Uploaded documents',
@@ -74,16 +139,16 @@ class VerificationPage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  
+
                   _buildDocumentItem('Driver\'s license'),
                   const SizedBox(height: 12),
-                  
+
                   _buildDocumentItem('Proof of address'),
                   const SizedBox(height: 12),
-                  
+
                   _buildDocumentItem('Pay stubs'),
                   const SizedBox(height: 32),
-                  
+
                   // Assigned Representative Section
                   const Text(
                     'Assigned representative',
@@ -94,10 +159,10 @@ class VerificationPage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  
+
                   _buildRepresentativeCard(),
                   const SizedBox(height: 16),
-                  
+
                   _buildStatusCard(),
                 ],
               ),
@@ -197,20 +262,11 @@ class VerificationPage extends StatelessWidget {
           CircleAvatar(
             radius: 24,
             backgroundColor: const Color(0xFFDEB887),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(24),
-              child: Image.asset(
-                'assets/images/ethan_carter.png', // You'll need to add this asset
-                width: 48,
-                height: 48,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return const Icon(
-                    Icons.person,
-                    color: Colors.white,
-                    size: 24,
-                  );
-                },
+            child: const Text(
+              'EC',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ),
@@ -288,26 +344,5 @@ class VerificationPage extends StatelessWidget {
     );
   }
 
-
-  Widget _buildNavItem(IconData icon, String label, bool isActive) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(
-          icon,
-          color: isActive ? Colors.black : Colors.grey,
-          size: 24,
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: isActive ? Colors.black : Colors.grey,
-            fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
-          ),
-        ),
-      ],
-    );
-  }
+  // Removed unused _buildNavItem helper.
 }
